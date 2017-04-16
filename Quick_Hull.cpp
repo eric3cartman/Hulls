@@ -73,11 +73,12 @@ void quickhull(vector<pair<int, int> > &P){
 		if(location(A,B,P[i])==2) left.pb(P[i]);
 		else if(location(A,B,P[i])==1) right.pb(P[i]);
 	}
-	/*for(int i=0;i<left.size();i++){
-		cout<<left[i].x<<" "<<left[i].y<<endl;
-	}*/
+	
 	findhull(A,B,right);
 	findhull(B,A,left);
+	
+	//print hull points
+	
 	for(int i=0;i<hull.size();i++){
 		cout<<hull[i].x<<" "<<hull[i].y<<endl;
 	}
@@ -86,6 +87,24 @@ void quickhull(vector<pair<int, int> > &P){
 int main() {
 	//NUMBER OF INPUTS MUST BE GREATER THAN 3
 	vector<pair<int, int> > Points;
+	
+	//random input
+	
+	/*int x,y,xsign,ysign;
+	for(int i=0;i<10000;i++){
+		x = rand()%1000;
+		y = rand()%1000;
+		xsign = rand()%2;
+		ysign = rand()%2;
+		
+		if(xsign) x *= -1;
+		if(ysign) y *= -1;
+		
+		Points.pb(mp(x,y));
+	}*/
+	
+	//sample input
+	
 	Points.pb(mp(4,4));
 	Points.pb(mp(4,-4));
 	Points.pb(mp(-4,4));
@@ -93,8 +112,9 @@ int main() {
 	Points.pb(mp(0,0));
 	Points.pb(mp(-2,-2));
 	Points.pb(mp(-1,-1));
-	
+	clock_t tStart=clock();
     quickhull(Points);
+    cout<<"CPU TIME = "<<(double)(clock()-tStart);
     //cout<<Points.size();
     return 0;
 }
