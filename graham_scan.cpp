@@ -5,10 +5,10 @@ using namespace std;
 #define x first
 #define y second
 
-vector<pair<int, int> > hull;
 pair<int, int> pivot;
-//check left or right
-int location(pair<int, int> p, pair<int, int> q, pair<int, int> r)
+
+//0-->colinear 1-->clokwise 2-->counter-clockwise
+int orientation(pair<int, int> p, pair<int, int> q, pair<int, int> r)
 {
     int val = (q.y - p.y) * (r.x - q.x) -
               (q.x - p.x) * (r.y - q.y);
@@ -16,91 +16,93 @@ int location(pair<int, int> p, pair<int, int> q, pair<int, int> r)
     if (val == 0) return 0; 
     return (val > 0)? 1: 2; 
 }
-//distance of point from line AB
-int dist(pair<int, int> a, pair<int, int> b, pair<int, int> c){
-	int dx = b.x - a.x;
-    int dy = b.y - a.y;
-    int d = dx * (a.y - c.y) - dy * (a.x - c.x);
-    if (d < 0) d = -d;
-    return d;
-}
-//distance between two points
+
 int sqrDist(pair<int, int> a, pair<int, int> b)  {
     int dx = a.x - b.x, dy = a.y - b.y;
     return dx * dx + dy * dy;
 }
 
 bool compare(pair<int, int> a, pair<int, int> b)  {
-    int order = location(pivot, a, b);
+    int order = orientation(pivot, a, b);
     if (order == 0)
         return sqrDist(pivot, a) < sqrDist(pivot, b); //nearest point first
     return (order == 2);
 }
 
-void findhull(pair<int, int> a, pair<int, int> b, vector<pair<int, int> > &P){
-	if(P.size()==0) return;
-	int dmax=-1,d=0;
-	int f=-1;
-	for(int i=0;i<P.size();i++){
-		d=dist(a,b,P[i]);
-		if(d>dmax){
-			dmax=d;
-			f=i;
-		}
-	}
-	//cout<<P[f].x<<P[f].y;
-	pair<int, int> A=P[f];
-	hull.pb(P[f]);//include farthest point in hull
-	P.erase(remove(P.begin(), P.end(), A), P.end());
-	vector<pair<int, int> > right1;
-	vector<pair<int, int> > right2;
-	for(int i=0;i<P.size();i++){
-		if(location(a,A,P[i])==1) right1.pb(P[i]);
-		if(location(A,b,P[i])==1) right2.pb(P[i]);
-	}
-	findhull(a,A,right1);
-	findhull(A,b,right2);
+void graham_scan(vector<pair<int, int> > &P)    {
+    int n=P.size();
+    stack<pair<int, int> > hull;
+    
+    int Y = 0;
+    for (int i = 1; i < n; i++)
+        if (P[i] < P[Y])
+            Y = i;
+
+    pair<int, int> temp = P[0];
+    P[0] = P[Y];
+    P[Y] = temp;
+
+    // sort the remaining point according to polar order about the pivot
+    pivot = P[0];
+    sort(P.begin() + 1, P.end(), compare);
+    
+    //remove colinear points
+    int m = 1;
+    for (int i=1; i<n; i++)
+    {
+       while (i < n-1 && orientation(P[0], P[i],P[i+1]) == 0) i++;
+       P[m] = P[i];
+       m++;
+    }
+ 
+    if (m < 3) return;
+   
+    hull.push(P[0]);
+    hull.push(P[1]);
+    hull.push(P[2]);
+
+    for (int i = 3; i < m; i++) {
+        pair<int, int> top = hull.top();
+        hull.pop();
+        while (orientation(hull.top(), top, P[i]) != 2)   {
+            top = hull.top();
+            hull.pop();
+        }
+        hull.push(top);
+        hull.push(P[i]);
+    }
+   // print hull
+   
+   while (!hull.empty())
+   {
+       pair<int, int> p = hull.top();
+       cout<<p.x<<" "<<p.y<<endl;
+       hull.pop();
+   }
 }
 
-void quickhull(vector<pair<int, int> > &P){
-	int n=P.size();
-	vector<pair<int, int> > left;
-	vector<pair<int, int> > right;
-	int l=0,r=0;
-	for(int i=0;i<n;i++){
-		if(P[i].x < P[l].x) l=i;
-		if(P[i].x > P[r].x) r=i;
-	}
-	hull.pb(P[l]);
-	hull.pb(P[r]);
-	pair<int, int> A=P[l];
-	pair<int, int> B=P[r];
-	pair<int, int> t;
-	
-	P.erase(remove(P.begin(), P.end(), A), P.end());
-	P.erase(remove(P.begin(), P.end(), B), P.end());
-	
-	vector<pair<int, int> > S1,S2;
-	//cout<<P.size();
-	for(int i=0;i<P.size();i++){
-		if(location(A,B,P[i])==2) left.pb(P[i]);
-		else if(location(A,B,P[i])==1) right.pb(P[i]);
-	}
-	/*for(int i=0;i<left.size();i++){
-		cout<<left[i].x<<" "<<left[i].y<<endl;
-	}*/
-	findhull(A,B,right);
-	findhull(B,A,left);
-	pivot =hull[0];
-	sort(hull.begin() + 1, hull.end(), compare);
-	for(int i=0;i<hull.size();i++){
-		cout<<hull[i].x<<" "<<hull[i].y<<endl;
-	}
-}
-
-int main() {
+int main()
+{
 	//NUMBER OF INPUTS MUST BE GREATER THAN 3
 	vector<pair<int, int> > Points;
+	
+	//random input
+	
+	/*int x,y,xsign,ysign;
+	for(int i=0;i<100;i++){
+		x = rand()%10000;
+		y = rand()%10000;
+		xsign = rand()%2;
+		ysign = rand()%2;
+		
+		if(xsign) x *= -1;
+		if(ysign) y *= -1;
+		
+		Points.pb(mp(x,y));
+	}*/
+	
+	//sample input
+	
 	Points.pb(mp(4,4));
 	Points.pb(mp(4,-4));
 	Points.pb(mp(-4,4));
@@ -109,7 +111,9 @@ int main() {
 	Points.pb(mp(-2,-2));
 	Points.pb(mp(-1,-1));
 	
-    quickhull(Points);
-    //cout<<Points.size();
+	clock_t tStart=clock();
+    graham_scan(Points);
+    cout<<"CPU TIME = "<<(double)(clock()-tStart);
+    
     return 0;
 }
