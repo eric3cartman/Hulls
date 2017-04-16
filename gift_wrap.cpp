@@ -32,6 +32,8 @@ void gift_wrap(vector<pair<int, int> > &P){
 		p=q;
 	} while(p!=left);
 	
+	//print hull
+	
 	for(int i=0;i<hull.size();i++){
 		cout<<hull[i].X<<" "<<hull[i].Y<<endl;
 	}
@@ -43,6 +45,24 @@ void gift_wrap(vector<pair<int, int> > &P){
 int main() {
 	//NUMBER OF INPUTS MUST BE GREATER THAN 3
 	vector<pair<int, int> > Points;
+	
+	//random input
+	
+	/*int x,y,xsign,ysign;
+	for(int i=0;i<100;i++){
+		x = rand()%1000;
+		y = rand()%1000;
+		xsign = rand()%2;
+		ysign = rand()%2;
+		
+		if(xsign) x *= -1;
+		if(ysign) y *= -1;
+		
+		Points.pb(mp(x,y));
+	}*/
+	
+	//sample input
+	
 	Points.pb(mp(4,4));
 	Points.pb(mp(4,-4));
 	Points.pb(mp(-4,4));
@@ -50,7 +70,9 @@ int main() {
 	Points.pb(mp(0,0));
 	Points.pb(mp(-2,-2));
 	Points.pb(mp(-1,-1));
-	
-	gift_wrap(Points);
-	return 0;
+	clock_t tStart=clock();
+    gift_wrap(Points);
+    cout<<"CPU TIME = "<<(double)(clock()-tStart);
+    //cout<<Points.size();
+    return 0;
 }
